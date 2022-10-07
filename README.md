@@ -1,4 +1,4 @@
-#  Gress, a Naïve Progress Bar
+#  Gress - a Naïve Progress Bar
 
 What should be the amateur version of *progress* - a ***gress***? The *gress* library provide highly customizable
 text-based progress monitor for *Python*. The inspiration for this library came from the original work of

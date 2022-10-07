@@ -18,7 +18,36 @@ WIDGETS_PATTERN = re.compile("(\{[a-zA-Z0-9_]+\})")
 
 class Bar(object):
     """
+    Bar is the main progress monitor class. The easiest way to monitor
+    progress is to initialize the **Bar** object with a custom template,
+    using predefined widgets and continuously increase its value. Although
+    this should cover most of the use cases, there are many ways to go deeper
+    to customize the main progress bar or individual widgets.
     
+    Attrs:
+        minimum: int or float
+            Returns current minimum value.
+        
+        maximum: int or float
+            Returns current maximum value.
+        
+        current: int or float
+            Returns current progress value.
+        
+        percent: float
+            Returns current progress as percentage.
+        
+        elapsed: float
+            Returns current elapsed time in seconds.
+        
+        finished: bool
+            Returns True if current progress finished already, False otherwise.
+        
+        samples:
+            Returns last progress samples as ((value, elapsed),).
+        
+        updates: int
+            Returns number of widgets updates.
     """
     
     def __init__(self, *widgets, minimum=0, maximum=None, size=80, refresh=0.5, keep=0.05, output=None):
