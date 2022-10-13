@@ -62,10 +62,10 @@ class Bar(object):
                 provided using a template, where the widgets are specified by a
                 name in curly brackets (e.g. 'Processed: {count} ETA: {eta}').
             
-            minimum: int
+            minimum: int or float
                 Minimum progress value or count.
             
-            maximum: int
+            maximum: int, float or None
                 Maximum progress value or count.
             
             size: int
@@ -98,7 +98,7 @@ class Bar(object):
         self._end_time = None
         self._finished = False
         
-        self._keep = 5
+        self._keep = keep
         self._samples = []
         
         self._size = int(size)
@@ -108,17 +108,6 @@ class Bar(object):
         self._next_update = None
         
         self._output = output
-        
-        # init widgets
-        if not self._widgets:
-            self._widgets = [DEFAULT_BAR] if maximum else [DEFAULT_BAR_NOMAX]
-        self._widgets = self._init_widgets(self._widgets)
-        
-        # init measurements to keep
-        if keep < 1 and maximum:
-            self._keep = max(int(maximum * keep), 5)
-        elif keep >= 1:
-            self._keep = int(keep)
     
     
     def __enter__(self):
@@ -206,13 +195,22 @@ class Bar(object):
         return self._updates
     
     
-    def start(self, value=0):
+    def start(self, value=0, minimum=None, maximum=None):
         """
-        Starts progress time.
+        Starts progress time. Additionally, it allows to set the progress range,
+        if the information was not available upon init.
         
         Args:
             value: int or float
                 Initial value at which the progress starts.
+            
+            minimum: int, float or None
+                Minimum progress value or count. If set to None, the original
+                value is retained.
+            
+            maximum: int, float or None
+                Maximum progress value or count. If set to None, the original
+                value is retained.
         """
         
         # reset
@@ -221,6 +219,23 @@ class Bar(object):
         self._update_time = None
         self._finished = False
         self._next_update = None
+        
+        # reset range
+        if minimum is not None:
+            self._min_value = minimum
+        if maximum is not None:
+            self._max_value = maximum
+        
+        # init widgets
+        if not self._widgets:
+            self._widgets = [DEFAULT_BAR] if maximum else [DEFAULT_BAR_NOMAX]
+        self._widgets = self._init_widgets(self._widgets)
+        
+        # init measurements to keep
+        if self._keep < 1 and maximum:
+            self._keep = max(int(maximum * self._keep), 5)
+        elif self._keep >= 1:
+            self._keep = int(self._keep)
         
         # update progress
         self.update(value)
