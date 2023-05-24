@@ -195,6 +195,18 @@ class Bar(object):
         return self._updates
     
     
+    def refresh(self):
+        """Updates current progress time and refreshes displayed bar."""
+        
+        # show widgets
+        line = self._format_widgets(self._widgets)
+        self._write_line("\r", line, "")
+        
+        # set update time
+        self._update_time = time.time()
+        self._updates += 1
+    
+    
     def start(self, value=0, minimum=None, maximum=None):
         """
         Starts progress time. Additionally, it allows to set the progress range,
@@ -269,16 +281,9 @@ class Bar(object):
         while len(self._samples) > self._keep:
             self._samples.pop(0)
         
-        # update widgets if needed
+        # refresh widgets if needed
         if self._should_update():
-            
-            # show widgets
-            line = self._format_widgets(self._widgets)
-            self._write_line("\r", line, "")
-            
-            # set update time
-            self._update_time = time.time()
-            self._updates += 1
+            self.refresh()
     
     
     def increase(self, value=1):
@@ -404,6 +409,26 @@ class Bar(object):
         self._widgets = self._init_widgets(self._widgets)
     
     
+    def widget(self, tag):
+        """
+        Gets widget instance by its tag.
+        
+        Args:
+            tag: str
+                Unique tag of the widget.
+        
+        Returns:
+            Widget
+                The widget instance.
+        """
+        
+        tag = "{" + tag + "}"
+        if tag not in self._variables:
+            raise KeyError("Unknown widget!")
+        
+        return self._variables[tag]
+    
+    
     def _should_update(self):
         """Checks whether widgets should be updated."""
         
@@ -457,6 +482,7 @@ class Bar(object):
                 elif tag in WIDGETS:
                     cls, kwargs = WIDGETS[tag]
                     item = cls(**kwargs)
+                    self._variables[tag] = item
                 
                 # add to progress
                 buff.append(item)
