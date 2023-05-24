@@ -8,33 +8,52 @@ from .enums import *
 def format_time(seconds, template=None, units=False):
     """Formats time according to given seconds."""
     
-    # get days
     days = 0
-    if template and "{d" in template:
-        days = int(seconds / DAY)
-        seconds %= DAY
-    
-    # get hours
     hours = 0
-    if template and "{h" in template:
-        hours = int(seconds / HOUR)
-        seconds %= HOUR
-    
-    # get minutes
     minutes = 0
-    if template and "{m" in template:
-        minutes = int(seconds / MINUTE)
-        seconds %= MINUTE
+    
+    # use template
+    if template:
+        
+        # get days
+        if "{d" in template:
+            days = int(seconds / DAY)
+            seconds %= DAY
+        
+        # get hours
+        if "{h" in template:
+            hours = int(seconds / HOUR)
+            seconds %= HOUR
+        
+        # get minutes
+        if "{m" in template:
+            minutes = int(seconds / MINUTE)
+            seconds %= MINUTE
     
     # make template according to current range
-    if not template:
+    else:
         
+        # split seconds
+        days = int(seconds / DAY)
+        seconds %= DAY
+        hours = int(seconds / HOUR)
+        seconds %= HOUR
+        minutes = int(seconds / MINUTE)
+        seconds %= MINUTE
+        
+        # show days
         if days:
             template = TIME_DHMS_U if units else TIME_DHMS
+        
+        # show hours
         elif hours:
             template = TIME_HMS_U if units else TIME_HMS
+        
+        # show minutes
         elif minutes:
             template = TIME_MS_U if units else TIME_MS
+        
+        # show seconds
         else:
             template = TIME_S_U if units else TIME_S
     
