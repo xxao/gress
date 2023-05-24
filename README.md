@@ -393,13 +393,23 @@ cover the whole progress range, otherwise the widget circles through them.
 - **{relvbar}** : Spin(markers=BAR, relative=True)
 
 
-### Variable widget
-The Variable widget provides a special type of widgets to displays custom variables within the progress bar. The
-variable is typically specified as a lambda function with no input parameters, returning the final formatted custom
-value.
+### Callback widget
+The Callback widget provides a special type of widgets to displays custom variables within the progress bar retrieved
+by specified callback function. The callback is typically specified as a lambda function with no input parameters,
+returning the final formatted custom value.
 
     callback: callable
         Custom function to be used to retrieve and format the custom value.
+
+### Variable widget
+The Variable widget provides a special type of widgets to displays custom variables within the progress bar. Optionally,
+the formatting template can be provided to format the value automatically into string.
+
+    value: any
+        Current variable value.
+    
+    template: str
+        Custom template to be used to format the value (e.g. "{:.2f}").
 
 ## Disclaimer
 

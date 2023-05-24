@@ -9,7 +9,7 @@ from .enums import *
 
 # import objects
 from .bar import Bar
-from .widgets import Widget, Variable, Property
+from .widgets import Widget, Callback, Variable, Property
 from .widgets import Time, Timer, ETA, Speed
 from .widgets import Gauge, Spin
 

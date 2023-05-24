@@ -25,18 +25,18 @@ class Widget(object):
         raise NotImplementedError("The '%s' widget does not implement the call method!" % self.__name__)
 
 
-class Variable(Widget):
+class Callback(Widget):
     """
-    The Variable widget provides a special type of widgets to displays custom
-    variables within the progress bar. The variable is typically specified as
-    a lambda function with no input parameters, returning the final formatted
-    custom value.
+    The Callback widget provides a special type of widgets to displays custom
+    variables within the progress bar retrieved by specified callback function.
+    The callback is typically specified as a lambda function with no input
+    parameters, returning the final formatted custom value.
     """
     
     
     def __init__(self, callback):
         """
-        Initializes a new instance of the Variable widget.
+        Initializes a new instance of the Callback widget.
         
         Args:
             callback: callable
@@ -52,6 +52,43 @@ class Variable(Widget):
         """Formats current progress."""
         
         return str(self._callback())
+
+
+class Variable(Widget):
+    """
+    The Variable widget provides a special type of widgets to displays custom
+    variables within the progress bar. Optionally, the formatting template can
+    be provided to format the value automatically into string.
+    
+    Attrs:
+        value: any
+            Current variable value.
+    """
+    
+    
+    def __init__(self, value="", template=None):
+        """
+        Initializes a new instance of the Variable widget.
+        
+        Args:
+            value: any
+                Initial value.
+            
+            template: str
+                Custom template to be used to format the variable value (e.g.
+                "{:.2f}").
+        """
+        
+        super().__init__()
+        
+        self.value = value
+        self._template = template
+    
+    
+    def __call__(self, progress, *args, **kwargs):
+        """Formats current progress."""
+        
+        return self._template.format(self.value) if self._template else str(self.value)
 
 
 class Property(Widget):
