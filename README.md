@@ -5,32 +5,109 @@ text-based progress monitor for *Python*. The inspiration for this library came 
 [Nilton Volpato](https://github.com/NiltonVolpato/python-progressbar), but it was recreated from scratch to make it
 easier to set up and use.
 
+### Example 1
+
+```python
+import time
+from gress import gress
+
+# counting sheep
+for i in gress(range(100)):
+    time.sleep(0.1)
+
+
+# output during processing
+# 81 of 100 (81%) █████████████████████████████-------- 00:00:08 | 9.54/s | ETA 1s
+```
+
+### Example 2
+
+```python
+import time
+from gress import gress
+
+# init herd
+sheep = (i for i in range(100))
+
+# counting sheep
+for i in gress(sheep, maximum=100):
+    time.sleep(0.1)
+
+
+# output during processing
+# 46 of 100 (46%) █████████████████-------------------- 00:00:04 | 9.66/s | ETA 5s
+```
+
+### Example 3
+
+```python
+import time
+from gress import gress
+
+# counting sheep
+for i in gress(range(100), "{percent} % {bar} ETA {autoeta}", size=40):
+    time.sleep(0.1)
+
+
+# output during processing
+# 46 % ████████████---------------- ETA 5s
+```
+
+### Example 4
+
 ```python
 import time
 import gress
 
 # init herd
-sheeps = 100
+sheep = 100
 
 # init bar
-bar = gress.Bar("Counting: {count} of {maximum} ({percent}%) {bar} {speed}/s | {timer} | ETA {autoeta}", maximum=sheeps)
+bar = gress.Bar("Counting: {count} of {maximum} ({percent}%) {bar} {speed}/s | {timer} | ETA {autoeta}", maximum=sheep)
+
+# counting sheep
+for i in bar(range(sheep)):
+    time.sleep(0.1)
+
+# write final report
+bar.write("All {count} sheep counted in {autotimer} with the average rate of {speed}/s.")
+
+
+# output during processing
+# Counting: 56 of 100 (56%) ███████████████------------ 9.63/s | 00:00:05 | ETA 4s
+
+# output after processing
+# All 100 sheep counted in 10s with the average rate of 9.65/s.
+```
+
+### Example 5
+
+```python
+import time
+import gress
+
+# init herd
+sheep = 100
+
+# init bar
+bar = gress.Bar("Counting: {count} of {maximum} ({percent}%) {bar} {speed}/s | {timer} | ETA {autoeta}", maximum=sheep)
 bar.start()
 
-# count the sheeps
+# counting sheep
 sleep = 0.1
-for i in range(sheeps):
+for i in range(sheep):
     time.sleep(sleep)
     
     # increment progress
     bar += 1
     
-    # count slower while sleeping (50 sheeps and more)
-    if bar.current == sheeps / 2:
+    # count slower while sleeping (50 sheep and more)
+    if bar.current == sheep / 2:
         bar.write("{time} I should sleep now, so I'm counting slower!")
         sleep *= 2
 
 # finish and make final report
-bar.finish("{time} All {count} sheeps counted in {autotimer} with the average rate of {speed}/s.")
+bar.finish("{time} All {count} sheep counted in {autotimer} with the average rate of {speed}/s.")
 
 
 # output during processing
@@ -39,13 +116,13 @@ bar.finish("{time} All {count} sheeps counted in {autotimer} with the average ra
 
 # output after processing
 # 2022-10-01 21:12:13.565873 I should sleep now, so I'm counting slower!
-# 2022-10-01 21:12:23.478325 All 100 sheeps counted in 15s with the average rate of 6.47/s.
+# 2022-10-01 21:12:23.478325 All 100 sheep counted in 15s with the average rate of 6.47/s.
 ```
 
 
 ## Progress Bar
 
-The easiest way to monitor progress is to initialize the **Bar** object with a custom template, using predefined
+The best way to monitor progress is to initialize the **Bar** object with a custom template, using predefined
 widgets and continuously increase its value (see the example above). Although this should cover most of the use cases,
 there are many ways to go deeper to customize the main progress bar or individual widgets.
 
@@ -68,10 +145,9 @@ there are many ways to go deeper to customize the main progress bar or individua
     refresh: float
         Minimum number of seconds between individual updates to be displayed.
     
-    keep: int or float
-        Absolute or relative number of last updates to keep for adaptive widgets like ETA
-        or speed. If value is grater than 1 it is considered as absolute, otherwise it is
-        relative to maximum value. The widgets are calculating progress from last
+    sample: int
+        Number of last sample to keep for adaptive widgets like ETA
+        or speed. Such widgets are calculating progress from last
         measurements instead of overall progress.
     
     output: any
@@ -86,7 +162,7 @@ recognizing predefined or registered widgets by their unique tags within a singl
 specified using the **{tag}** syntax.
 
 ```python
-bar = gress.Bar("Counting: {count} of {maximum} sheeps. Ready in {autoeta}.", maximum=100)
+bar = gress.Bar("Counting: {count} of {maximum} sheep. Ready in {autoeta}.", maximum=100)
 ```
 
 **By widgets** - If none of the predefined widgets suits your needs, custom instances can be provided directly.
@@ -95,7 +171,7 @@ bar = gress.Bar("Counting: {count} of {maximum} sheeps. Ready in {autoeta}.", ma
 bar = gress.Bar(
     "Counting: ",
     gress.Property("current", "{:03}"), " of ", gress.Property("maximum"),
-    " sheeps. Ready in ",
+    " sheep. Ready in ",
     gress.ETA("{s}s"),
     ".",
     maximum=100)
@@ -104,21 +180,41 @@ bar = gress.Bar(
 **By combination** - Any template can be combined with custom widgets instances.
 
 ```python
-bar = gress.Bar("Counting: ", gress.Property("current", "{:03}"), " of {maximum} sheeps. Ready in {autoeta}.", maximum=100)
+bar = gress.Bar("Counting: ", gress.Property("current", "{:03}"), " of {maximum} sheep. Ready in {autoeta}.", maximum=100)
 ```
 
 **By custom widgets within template** - Custom widgets instances can also be registered under unique tag and used
 directly within a template.
 
 ```python
-bar = gress.Bar("Counting: {mycount} of {maximum} sheeps. Ready in {autoeta}.", maximum=100)
+bar = gress.Bar("Counting: {mycount} of {maximum} sheep. Ready in {autoeta}.", maximum=100)
 bar.register("mycount", gress.Property("current", "{:03}"))
 ```
 
 
-### Updating the progress
-Depending on particular situation, different types of progress update may be useful. Upon every update the bar decides
-whether the displayed progress should be refreshed or not. This can be influenced by the **refresh** argument of the bar itself.
+### Used as iterable
+The progress bar can be used directly as an iterable by providing valid source. In such scenario the increment is done
+automatically for every iteration call.
+
+```python
+# using collection
+for i in bar([1,2,3,4,5]):
+    do_something()
+
+# using range
+for i in bar(range(100)):
+    do_something()
+
+# using iterable
+items = (i for i in range(100))
+for i in bar(items, maximum=100):
+    do_something()
+```
+
+### Updating the progress manually
+Depending on particular situation, different types of manual progress update may be useful. Upon every update the bar
+decides whether the displayed progress should be refreshed or not. This can be influenced by the **refresh** argument
+of the bar itself.
 
 ```python
 # by increment
@@ -127,13 +223,13 @@ for i in range(0, 100, step):
     do_something()
     bar += step
 
-# by relative increase
+# by increment method
 step = 10
 for i in range(0, 100, step):
     do_something()
     bar.increase(step)
 
-# by absolute value
+# to specific value
 step = 10
 for i in range(0, 100, step):
     do_something()
@@ -152,10 +248,11 @@ bar.write("{time} I should sleep now, so I'm counting slower!")
 ### Finishing the progress
 To inform the bar that the progress has finished just call the **finish()** method. This stops the elapsed time to be
 increase any further and prints the final state of the progress. This behavior can be modified by providing custom
-widgets to be displayed and writen permanently.
+widgets to be displayed and writen permanently. In case the progress bar is used as iterable, it silently finishes
+itself automatically when iteration stops.
 
 ```python
-bar.finish("{time} All {count} sheeps counted in {autotimer} with the average rate of {speed}/s.")
+bar.finish("{time} All {count} sheep counted in {autotimer} with the average rate of {speed}/s.")
 ```
 
 ## Available Widgets
@@ -216,7 +313,7 @@ notation (e.g. "%Y-%m-%d %H:%M:%S").
         datetime notation (e.g. "%Y-%m-%d %H:%M:%S"). If set to None, full time is shown.
 
 #### Predefined time widgets
-- **{Time}** : Time()
+- **{time}** : Time()
 
 
 ### Timer widget

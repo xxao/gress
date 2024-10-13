@@ -47,7 +47,7 @@ register("scimin", Property, name="minimum", template="{:.2f}", prefixes=PREFIXE
 register("scimax", Property, name="maximum", template="{:.2f}", prefixes=PREFIXES, step=1000)
 
 # register Time widgets
-register("Time", Time)
+register("time", Time)
 
 # register Timer widgets
 register("timer", Timer, template=TIME_HMS)

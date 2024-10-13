@@ -7,6 +7,7 @@
 import re
 import time
 import math
+from collections.abc import Iterable
 
 from .enums import *
 from .widgets import Widget
@@ -50,9 +51,9 @@ class Bar(object):
             Returns number of widgets updates.
     """
     
-    def __init__(self, *widgets, minimum=0, maximum=None, size=80, refresh=0.5, keep=0.05, output=None):
+    def __init__(self, *widgets, minimum=0, maximum=None, size=80, refresh=0.5, sample=10, output=None):
         """
-        Initializes a new instance of the Progress monitor class.
+        Initializes a new instance of the progress Bar monitor class.
         
         Args:
             widgets: (Widget,) or str
@@ -75,11 +76,9 @@ class Bar(object):
                 Minimum number of seconds between individual updates to be
                 displayed.
             
-            keep: int or float
-                Absolute or relative number of last updates to keep for adaptive
-                widgets like ETA or speed. If value is grater than 1 it is
-                considered as absolute, otherwise it is relative to maximum
-                value. The widgets are calculating progress from last
+            sample: int
+                Number of last samples to keep for adaptive widgets like ETA
+                or speed. Such widgets are calculating progress from last
                 measurements instead of overall progress.
             
             output: any
@@ -93,12 +92,13 @@ class Bar(object):
         self._min_value = minimum
         self._max_value = maximum
         self._curr_value = None
+        self._items = None
         
         self._start_time = None
         self._end_time = None
         self._finished = False
         
-        self._keep = keep
+        self._sample = int(sample)
         self._samples = []
         
         self._size = int(size)
@@ -128,6 +128,50 @@ class Bar(object):
         
         self.increase(value)
         return self
+    
+    
+    def __call__(self, items, maximum=None):
+        """
+        Sets items to use current bar as iterable, which automatically
+        increases the counter.
+        
+        Args:
+            items: iterable
+                Items iterable.
+            
+            maximum: int, float or None
+                Maximum progress value or count. If set to None and given
+                iterable has length, the value is determined automatically.
+        """
+        
+        # check items
+        if not isinstance(items, Iterable):
+            raise ValueError("Items must be iterable object.")
+        
+        # reset current progress
+        self.reset()
+        
+        # set items
+        self._items = items
+        
+        # set maximum
+        if maximum is not None:
+            self._max_value = maximum
+        elif hasattr(items, '__len__'):
+            self._max_value = len(items)
+        
+        return self
+    
+    
+    def __iter__(self):
+        """Iterate over current items."""
+        
+        try:
+            for item in self._items:
+                self.increase()
+                yield item
+        finally:
+            self.finish(permanent=False)
     
     
     @property
@@ -195,6 +239,23 @@ class Bar(object):
         return self._updates
     
     
+    def reset(self):
+        """Resets current progress back to initial state."""
+        
+        self._curr_value = None
+        self._items = None
+        
+        self._start_time = None
+        self._end_time = None
+        self._finished = False
+        
+        self._samples = []
+        
+        self._updates = 0
+        self._update_time = None
+        self._next_update = None
+    
+    
     def refresh(self):
         """Updates current progress time and refreshes displayed bar."""
         
@@ -225,12 +286,11 @@ class Bar(object):
                 value is retained.
         """
         
-        # reset
+        # reset current progress
+        self.reset()
+        
+        # set start time
         self._start_time = time.time()
-        self._end_time = None
-        self._update_time = None
-        self._finished = False
-        self._next_update = None
         
         # reset range
         if minimum is not None:
@@ -240,14 +300,8 @@ class Bar(object):
         
         # init widgets
         if not self._widgets:
-            self._widgets = [DEFAULT_BAR] if maximum else [DEFAULT_BAR_NOMAX]
+            self._widgets = [DEFAULT_BAR] if self._max_value else [DEFAULT_BAR_NOMAX]
         self._widgets = self._init_widgets(self._widgets)
-        
-        # init measurements to keep
-        if self._keep < 1 and maximum:
-            self._keep = max(int(maximum * self._keep), 5)
-        elif self._keep >= 1:
-            self._keep = int(self._keep)
         
         # update progress
         self.update(value)
@@ -255,7 +309,7 @@ class Bar(object):
         return self
     
     
-    def update(self, value=None):
+    def update(self, value, refresh=None):
         """
         Updates current progress time and value and automatically update
         displayed bar if needed.
@@ -263,6 +317,10 @@ class Bar(object):
         Args:
             value: int or float
                 Specifies the new value to set for current progress.
+            
+            refresh: bool or None
+                Forces refresh if set to True, blocks it if set to False or
+                lets automatic if set to None.
         """
         
         # start if needed
@@ -270,19 +328,21 @@ class Bar(object):
             self.start(value)
             return
         
-        # update current value
+        # update and sample current value
         if value is not None:
             self._curr_value = value
-        
-        # store sample
-        self._samples.append((value, self.elapsed))
+            self._samples.append((value, self.elapsed))
         
         # remove old samples
-        while len(self._samples) > self._keep:
+        while len(self._samples) > self._sample:
             self._samples.pop(0)
         
-        # refresh widgets if needed
-        if self._should_update():
+        # block refresh
+        if refresh is False:
+            return
+        
+        # refresh widgets if forced or needed
+        if refresh or self._should_update():
             self.refresh()
     
     
@@ -322,12 +382,17 @@ class Bar(object):
                 visible even after next progress update.
         """
         
+        # just write widgets if finished already
+        if self._finished:
+            self.write(*widgets, permanent=permanent)
+            return
+        
         # set state
         self._end_time = time.time()
         self._finished = True
         
         # update with max value
-        self.update(self._max_value)
+        self.update(self._max_value, refresh=True)
         
         # write final widgets
         widgets = self._init_widgets(widgets)
