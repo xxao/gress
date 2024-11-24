@@ -51,7 +51,7 @@ class Bar(object):
             Returns number of widgets updates.
     """
     
-    def __init__(self, *widgets, minimum=0, maximum=None, size=80, refresh=0.5, sample=10, output=None):
+    def __init__(self, *widgets, minimum=0, maximum=None, size=80, refresh=0.5, sample=10, finish=DEFAULT_FINISHED, output=None):
         """
         Initializes a new instance of the progress Bar monitor class.
         
@@ -81,13 +81,24 @@ class Bar(object):
                 or speed. Such widgets are calculating progress from last
                 measurements instead of overall progress.
             
+            finish: (Widget,) or str
+                Collection of widgets to display on iterator finish. The widget
+                can be one of the many predefined widgets, simple string to show
+                or any class derived from the Widget base. The widgets can also
+                be provided using a template, where the widgets are specified by
+                a name in curly brackets (e.g. '{count} items in {autotimer}').
+            
             output: any
                 Custom output to which all the progress and messages are writen.
                 This must support 'write' and 'flush' method calls.
         """
         
         self._variables = {}
-        self._widgets = widgets
+        self._widgets = widgets or []
+        
+        self._widgets_finish = finish or []
+        if not isinstance(self._widgets_finish, (list, tuple)):
+            self._widgets_finish = [finish]
         
         self._min_value = minimum
         self._max_value = maximum
@@ -171,7 +182,7 @@ class Bar(object):
                 self.increase()
                 yield item
         finally:
-            self.finish(permanent=False)
+            self.finish(*self._widgets_finish)
     
     
     @property
@@ -364,7 +375,7 @@ class Bar(object):
         self.update(value)
     
     
-    def finish(self, *widgets, permanent=True):
+    def finish(self, *widgets):
         """
         Finalizes current progress and optionally prints final report by
         provided widgets template.
@@ -376,15 +387,11 @@ class Bar(object):
                 any class derived from the Widget base. The widgets can also be
                 provided using a template, where the widgets are specified by a
                 name in curly brackets (e.g. 'Processed: {count} ETA: {eta}').
-            
-            permanent: bool
-                If set to True, line is ended by new-line character and stays
-                visible even after next progress update.
         """
         
         # just write widgets if finished already
         if self._finished:
-            self.write(*widgets, permanent=permanent)
+            self.write(*widgets, permanent=True)
             return
         
         # set state
@@ -392,16 +399,12 @@ class Bar(object):
         self._finished = True
         
         # update with max value
-        self.update(self._max_value, refresh=True)
+        self.update(None, refresh=True)
         
         # write final widgets
         widgets = self._init_widgets(widgets)
         if widgets:
-            self.write(*widgets, permanent=permanent)
-        
-        # keep last
-        elif permanent:
-            self._write_line("\r", "", "\n")
+            self.write(*widgets, permanent=True)
         
         # clear last
         else:

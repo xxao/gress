@@ -4,6 +4,7 @@
 # default bars
 DEFAULT_BAR = "{count} of {max} ({percent}%) {bar} {timer} | {speed}/s | ETA {autoeta}"
 DEFAULT_BAR_NOMAX = "{count} {bar} {timer} | {speed}/s"
+DEFAULT_FINISHED = "{count} items finished in {autotimer} with average rate of {speed}/s"
 
 # available progress properties used by template widget
 PROPS = ("current", "minimum", "maximum", "percent", "elapsed", "finished")

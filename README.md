@@ -18,6 +18,9 @@ for i in gress(range(100)):
 
 # output during processing
 # 81 of 100 (81%) █████████████████████████████-------- 00:00:08 | 9.54/s | ETA 1s
+
+# output after processing
+# 100 items finished in 10s with average rate of 9.92/s
 ```
 
 ### Example 2
@@ -36,6 +39,9 @@ for i in gress(sheep, maximum=100):
 
 # output during processing
 # 46 of 100 (46%) █████████████████-------------------- 00:00:04 | 9.66/s | ETA 5s
+
+# output after processing
+# 100 items finished in 10s with average rate of 9.92/s
 ```
 
 ### Example 3
@@ -45,7 +51,7 @@ import time
 from gress import gress
 
 # counting sheep
-for i in gress(range(100), "{percent} % {bar} ETA {autoeta}", size=40):
+for i in gress(range(100), "{percent} % {bar} ETA {autoeta}", size=40, finish=None):
     time.sleep(0.1)
 
 
@@ -63,21 +69,21 @@ import gress
 sheep = 100
 
 # init bar
-bar = gress.Bar("Counting: {count} of {maximum} ({percent}%) {bar} {speed}/s | {timer} | ETA {autoeta}", maximum=sheep)
+bar = gress.Bar("Counting: {count} of {maximum} ({percent}%) {bar} {speed}/s | {timer} | ETA {autoeta}", maximum=sheep, finish=None)
 
 # counting sheep
 for i in bar(range(sheep)):
     time.sleep(0.1)
 
 # write final report
-bar.write("All {count} sheep counted in {autotimer} with the average rate of {speed}/s.")
+bar.write("All {count} sheep counted in {autotimer} with the average rate of {speed}/s")
 
 
 # output during processing
 # Counting: 56 of 100 (56%) ███████████████------------ 9.63/s | 00:00:05 | ETA 4s
 
 # output after processing
-# All 100 sheep counted in 10s with the average rate of 9.65/s.
+# All 100 sheep counted in 10s with the average rate of 9.65/s
 ```
 
 ### Example 5
@@ -103,20 +109,20 @@ for i in range(sheep):
     
     # count slower while sleeping (50 sheep and more)
     if bar.current == sheep / 2:
-        bar.write("{time} I should sleep now, so I'm counting slower!")
+        bar.write("{time} I should sleep now, so I'm counting slower...")
         sleep *= 2
 
 # finish and make final report
-bar.finish("{time} All {count} sheep counted in {autotimer} with the average rate of {speed}/s.")
+bar.finish("{time} All {count} sheep counted in {autotimer} with the average rate of {speed}/s")
 
 
 # output during processing
-# 2022-10-01 21:12:13.565873 I should sleep now, so I'm counting slower!
+# 2022-10-01 21:12:13.565873 I should sleep now, so I'm counting slower...
 # Counting: 77 of 100 (77%) ████████████████████------ 4.95/s | 00:00:10 | ETA 4s
 
 # output after processing
 # 2022-10-01 21:12:13.565873 I should sleep now, so I'm counting slower!
-# 2022-10-01 21:12:23.478325 All 100 sheep counted in 15s with the average rate of 6.47/s.
+# 2022-10-01 21:12:23.478325 All 100 sheep counted in 15s with the average rate of 6.47/s
 ```
 
 
@@ -150,6 +156,13 @@ there are many ways to go deeper to customize the main progress bar or individua
         or speed. Such widgets are calculating progress from last
         measurements instead of overall progress.
     
+    finish: (Widget,) or str
+        Collection of widgets to display on iterator finish. The widget
+        can be one of the many predefined widgets, simple string to show
+        or any class derived from the Widget base. The widgets can also
+        be provided using a template, where the widgets are specified by
+        a name in curly brackets (e.g. '{count} items in {autotimer}').
+    
     output: any
         Custom output to which all the progress and messages are writen. This must support
         'write' and 'flush' method calls.
@@ -162,7 +175,7 @@ recognizing predefined or registered widgets by their unique tags within a singl
 specified using the **{tag}** syntax.
 
 ```python
-bar = gress.Bar("Counting: {count} of {maximum} sheep. Ready in {autoeta}.", maximum=100)
+bar = gress.Bar("Counting: {count} of {maximum} sheep. Ready in {autoeta}", maximum=100)
 ```
 
 **By widgets** - If none of the predefined widgets suits your needs, custom instances can be provided directly.
@@ -180,14 +193,14 @@ bar = gress.Bar(
 **By combination** - Any template can be combined with custom widgets instances.
 
 ```python
-bar = gress.Bar("Counting: ", gress.Property("current", "{:03}"), " of {maximum} sheep. Ready in {autoeta}.", maximum=100)
+bar = gress.Bar("Counting: ", gress.Property("current", "{:03}"), " of {maximum} sheep. Ready in {autoeta}", maximum=100)
 ```
 
 **By custom widgets within template** - Custom widgets instances can also be registered under unique tag and used
 directly within a template.
 
 ```python
-bar = gress.Bar("Counting: {mycount} of {maximum} sheep. Ready in {autoeta}.", maximum=100)
+bar = gress.Bar("Counting: {mycount} of {maximum} sheep. Ready in {autoeta}", maximum=100)
 bar.register("mycount", gress.Property("current", "{:03}"))
 ```
 
@@ -242,17 +255,17 @@ as complex as a combination of multiple widgets. Depending on the **permanent** 
 permanently of removed later by next progress update.
 
 ```python
-bar.write("{time} I should sleep now, so I'm counting slower!")
+bar.write("{time} I should sleep now, so I'm counting slower...")
 ```
 
 ### Finishing the progress
 To inform the bar that the progress has finished just call the **finish()** method. This stops the elapsed time to be
 increase any further and prints the final state of the progress. This behavior can be modified by providing custom
-widgets to be displayed and writen permanently. In case the progress bar is used as iterable, it silently finishes
+widgets to be displayed and writen permanently. In case the progress bar is used as iterable, it finishes
 itself automatically when iteration stops.
 
 ```python
-bar.finish("{time} All {count} sheep counted in {autotimer} with the average rate of {speed}/s.")
+bar.finish("{time} All {count} sheep counted in {autotimer} with the average rate of {speed}/s")
 ```
 
 ## Available Widgets

@@ -2,8 +2,8 @@
 
 from setuptools import setup, find_packages
 
-# get version
-version = "0.3.0"
+# set version
+version = "0.4.0"
 
 # get description
 with open("README.md", "r", encoding="utf8") as fh:
