@@ -389,6 +389,10 @@ class Bar(object):
                 name in curly brackets (e.g. 'Processed: {count} ETA: {eta}').
         """
         
+        # start if needed
+        if self._start_time is None:
+            self.start(0)
+        
         # just write widgets if finished already
         if self._finished:
             self.write(*widgets, permanent=True)
