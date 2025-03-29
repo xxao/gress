@@ -51,7 +51,7 @@ class Bar(object):
             Returns number of widgets updates.
     """
     
-    def __init__(self, *widgets, minimum=0, maximum=None, size=80, refresh=0.5, sample=10, finish=DEFAULT_FINISHED, output=None):
+    def __init__(self, *widgets, minimum=0, maximum=None, size=80, refresh=0.5, sample=10, finish=DEFAULT_FINISH, output=None):
         """
         Initializes a new instance of the progress Bar monitor class.
         

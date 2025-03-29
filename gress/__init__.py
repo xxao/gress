@@ -19,7 +19,7 @@ from .utils import format_time, format_power
 
 
 # init convenient funcs
-def gress(items, *widgets, minimum=0, maximum=None, size=80, refresh=0.5, sample=10, finish=DEFAULT_FINISHED, output=None):
+def gress(items, *widgets, minimum=0, maximum=None, size=80, refresh=0.5, sample=10, finish=DEFAULT_FINISH, output=None):
     """
     Initializes a new instance of the progress Bar monitor class and returns its
     iterator filled by given items.
@@ -81,7 +81,7 @@ def gress(items, *widgets, minimum=0, maximum=None, size=80, refresh=0.5, sample
     return _bar(items)
 
 
-def bar(*widgets, minimum=0, maximum=None, size=80, refresh=0.5, sample=10, finish=DEFAULT_FINISHED, output=None):
+def bar(*widgets, minimum=0, maximum=None, size=80, refresh=0.5, sample=10, finish=DEFAULT_FINISH, output=None):
     """
     Initializes a new instance of the progress Bar monitor.
     
