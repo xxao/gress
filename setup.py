@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 # set version
-version = "0.4.1"
+version = "0.5.0"
 
 # get description
 with open("README.md", "r", encoding="utf8") as fh:

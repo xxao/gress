@@ -2,7 +2,7 @@
 #  Copyright (c) Martin Strohalm. All rights reserved.
 
 # set version
-version = (0, 4, 1)
+version = (0, 5, 0)
 
 # import constants
 from .enums import *
@@ -19,7 +19,7 @@ from .utils import format_time, format_power
 
 
 # init convenient funcs
-def gress(items, *widgets, minimum=0, maximum=None, size=80, refresh=0.5, sample=10, finish=DEFAULT_FINISH, output=None):
+def gress(items, *widgets, minimum=0, maximum=None, size=80, refresh=0.5, sample=10, finish=DEFAULT_FINISH, prefix=None, output=None):
     """
     Initializes a new instance of the progress Bar monitor class and returns its
     iterator filled by given items.
@@ -57,6 +57,9 @@ def gress(items, *widgets, minimum=0, maximum=None, size=80, refresh=0.5, sample
             be provided using a template, where the widgets are specified by
             a name in curly brackets (e.g. '{count} items in {autotimer}').
         
+        prefix: str or None
+            Plain text automatically added to every progress line.
+        
         output: any
             Custom output to which all the progress and messages are writen.
             This must support 'write' and 'flush' method calls.
@@ -75,13 +78,14 @@ def gress(items, *widgets, minimum=0, maximum=None, size=80, refresh=0.5, sample
         refresh = refresh,
         sample = sample,
         finish = finish,
+        prefix = prefix,
         output = output)
     
     # init iterator
     return _bar(items)
 
 
-def bar(*widgets, minimum=0, maximum=None, size=80, refresh=0.5, sample=10, finish=DEFAULT_FINISH, output=None):
+def bar(*widgets, minimum=0, maximum=None, size=80, refresh=0.5, sample=10, finish=DEFAULT_FINISH, prefix=None, output=None):
     """
     Initializes a new instance of the progress Bar monitor.
     
@@ -118,6 +122,9 @@ def bar(*widgets, minimum=0, maximum=None, size=80, refresh=0.5, sample=10, fini
             be provided using a template, where the widgets are specified by
             a name in curly brackets (e.g. '{count} items in {autotimer}').
         
+        prefix: str or None
+            Plain text automatically added to every progress line.
+        
         output: any
             Custom output to which all the progress and messages are writen.
             This must support 'write' and 'flush' method calls.
@@ -131,4 +138,5 @@ def bar(*widgets, minimum=0, maximum=None, size=80, refresh=0.5, sample=10, fini
         refresh = refresh,
         sample = sample,
         finish = finish,
+        prefix = prefix,
         output = output)
