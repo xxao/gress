@@ -29,7 +29,7 @@ VBAR = " ▁▂▃▄▅▆▇█"
 # special characters
 LINE_UP = "\033[1A"
 LINE_CLEAR = "\x1b[2K"
-NA = "N/A"
+NA = "?"
 
 # define time portions
 MINUTE = 60
