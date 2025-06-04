@@ -51,7 +51,7 @@ class Bar(object):
             Returns number of widgets updates.
     """
     
-    def __init__(self, *widgets, minimum=0, maximum=None, size=80, refresh=0.5, sample=10, finish=DEFAULT_FINISH, output=None):
+    def __init__(self, *widgets, minimum=0, maximum=None, size=80, refresh=0.5, sample=10, finish=DEFAULT_FINISH, prefix=None, output=None):
         """
         Initializes a new instance of the progress Bar monitor class.
         
@@ -88,6 +88,9 @@ class Bar(object):
                 be provided using a template, where the widgets are specified by
                 a name in curly brackets (e.g. '{count} items in {autotimer}').
             
+            prefix: str or None
+                Plain text automatically added to every progress line.
+            
             output: any
                 Custom output to which all the progress and messages are writen.
                 This must support 'write' and 'flush' method calls.
@@ -95,6 +98,9 @@ class Bar(object):
         
         self._variables = {}
         self._widgets = widgets or []
+        
+        self._prefix = ""
+        self.prefix(prefix)
         
         self._widgets_finish = finish or []
         if not isinstance(self._widgets_finish, (list, tuple)):
@@ -248,6 +254,18 @@ class Bar(object):
         """Returns number of widgets updates."""
         
         return self._updates
+    
+    
+    def prefix(self, text):
+        """
+        Sets prefix text.
+        
+        Args:
+            text: str or None
+                Plain text automatically added to every progress line.
+        """
+        
+        self._prefix = str(text) if text else ""
     
     
     def reset(self):
@@ -569,6 +587,10 @@ class Bar(object):
         space = self._size
         results = []
         expanding = []
+        
+        # add prefix
+        if self._prefix:
+            widgets = [self._prefix] + list(widgets)
         
         # prepare widgets
         for idx, widget in enumerate(widgets):
