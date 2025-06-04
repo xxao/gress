@@ -163,6 +163,9 @@ there are many ways to go deeper to customize the main progress bar or individua
         be provided using a template, where the widgets are specified by
         a name in curly brackets (e.g. '{count} items in {autotimer}').
     
+    prefix: str or None
+        Plain text automatically added to every progress line.
+    
     output: any
         Custom output to which all the progress and messages are writen. This must support
         'write' and 'flush' method calls.
